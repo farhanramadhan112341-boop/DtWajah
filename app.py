@@ -6,7 +6,7 @@ from keras.utils import img_to_array
 
 # === Inisialisasi ===
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-model = load_model("mobileNet_emotion_recog.h5")
+model = load_model("mobileNet_emotion_recog.h5")  # gunakan model baru Anda
 
 # Label emosi
 class_labels = ('Marah','Biasa','Takut','Bahagia','Netral','Sedih','Terkejut')
@@ -25,9 +25,9 @@ def detect_emotion(frame):
         if np.sum([roi_color]) != 0:
             img_pixels = img_to_array(roi_color)
             img_pixels = np.expand_dims(img_pixels, axis=0)
-            img_pixels /= 255.0
+            img_pixels = img_pixels / 255.0
 
-            prediction = model.predict(img_pixels)[0]
+            prediction = model.predict(img_pixels, verbose=0)[0]
             label = class_labels[prediction.argmax()]
 
             cv2.putText(frame, label, (x, y-10),
@@ -36,7 +36,7 @@ def detect_emotion(frame):
 
 # === Streamlit UI ===
 st.title("🎥 Deteksi Ekspresi Wajah Real-Time")
-st.write("Ekspresi: Marah, Biasa, Takut, Bahagia, Netral, Sedih, Terkejut")
+st.write("Ekspresi yang dikenali: **Marah, Biasa, Takut, Bahagia, Netral, Sedih, Terkejut**")
 
 run = st.checkbox("Aktifkan Kamera")
 
@@ -47,11 +47,12 @@ camera = cv2.VideoCapture(0)
 while run:
     ret, frame = camera.read()
     if not ret:
-        st.warning("Kamera tidak terdeteksi.")
+        st.warning("⚠️ Kamera tidak terdeteksi.")
         break
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame = detect_emotion(frame)
     FRAME_WINDOW.image(frame)
 
 camera.release()
+
 
