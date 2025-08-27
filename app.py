@@ -6,7 +6,7 @@ from keras.utils import img_to_array
 
 # === Inisialisasi ===
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-model = load_model("mobileNet_emotion_recog.h5")  # gunakan model baru Anda
+model = load_model("Emotion_Detection.h5")  # gunakan model baru Anda
 
 # Label emosi
 class_labels = ('Marah','Biasa','Takut','Bahagia','Netral','Sedih','Terkejut')
