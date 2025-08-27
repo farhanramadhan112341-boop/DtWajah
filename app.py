@@ -3,10 +3,19 @@ import numpy as np
 import streamlit as st
 from keras.models import load_model
 from keras.utils import img_to_array
+import os
+import time
 
 # === Inisialisasi ===
-faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-model = load_model("Emotion_Detection.h5")  # gunakan model baru Anda
+faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+# Cek model
+MODEL_PATH = "Emotion_Detection.h5"
+if not os.path.exists(MODEL_PATH):
+    st.error(f"❌ File model '{MODEL_PATH}' tidak ditemukan. Pastikan sudah diunggah.")
+    st.stop()
+
+model = load_model(MODEL_PATH)
 
 # Label emosi
 class_labels = ('Marah','Biasa','Takut','Bahagia','Netral','Sedih','Terkejut')
@@ -39,20 +48,28 @@ st.title("🎥 Deteksi Ekspresi Wajah Real-Time")
 st.write("Ekspresi yang dikenali: **Marah, Biasa, Takut, Bahagia, Netral, Sedih, Terkejut**")
 
 run = st.checkbox("Aktifkan Kamera")
+FRAME_WINDOW = st.empty()
 
-FRAME_WINDOW = st.image([])
+if run:
+    camera = cv2.VideoCapture(0)
 
-camera = cv2.VideoCapture(0)
+    if not camera.isOpened():
+        st.error("⚠️ Kamera tidak terdeteksi.")
+    else:
+        while run:
+            ret, frame = camera.read()
+            if not ret:
+                st.warning("⚠️ Gagal membaca frame dari kamera.")
+                break
 
-while run:
-    ret, frame = camera.read()
-    if not ret:
-        st.warning("⚠️ Kamera tidak terdeteksi.")
-        break
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = detect_emotion(frame)
-    FRAME_WINDOW.image(frame)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = detect_emotion(frame)
 
-camera.release()
+            FRAME_WINDOW.image(frame)
 
+            # Biar ga terlalu berat
+            time.sleep(0.03)
 
+    camera.release()
+else:
+    st.info("Klik ✅ **Aktifkan Kamera** untuk memulai.")
